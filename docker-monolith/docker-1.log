@@ -1,0 +1,4 @@
+REPOSITORY              TAG                 IMAGE ID            CREATED             SIZE
+alvic/ubuntu-tmp-file   latest              7dafa500cceb        41 seconds ago      117MB
+ubuntu                  16.04               7e87e2b3bf7a        3 weeks ago         117MB
+hello-world             latest              fce289e99eb9        6 weeks ago         1.84kB
