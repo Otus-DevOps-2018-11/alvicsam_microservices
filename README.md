@@ -1,6 +1,11 @@
 # alvicsam_microservices
 alvicsam microservices repository
 
+### hints
+
+Исправление ошибки " Unable to query docker version: Get https://34.76.63.196:2376/v1.15/version: x509: certificate is valid for ip_addr, not other_ip_addr"  
+`docker-machine regenerate-certs docker-host`
+
 ### ДЗ №12 Введение в Docker
 
 Установлены Docker, docker-compose, docker-machine  
