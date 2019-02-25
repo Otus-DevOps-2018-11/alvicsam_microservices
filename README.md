@@ -44,3 +44,35 @@ $ gcloud compute firewall-rules create reddit-app \
 Образ помечен тегом `docker tag reddit:latest alvicsam/otus-reddit:1.0`  
 Образ загружен в docker.hub `docker push alvicsam/otus-reddit:1.0`  
 Загруженный контейнер запущен локально `docker run --name reddit -d -p 9292:9292 alvicsam/otus-reddit:1.0`  
+
+
+### ДЗ №14 Docker. Микросервисы.
+
+Скачан архив reddit-microservices и добавлены докерфайлы. ADD изменен на COPY.  
+Запущена сборка контейнеров.  
+```bash
+docker build -t alvicsam/post:1.0 ./post-py
+docker build -t alvicsam/comment:1.0 ./comment
+docker build -t alvicsam/ui:1.0 ./ui
+```
+В процессе сборки исправлен Dockerfile для post-py (досталвяются недостающие пакеты)  
+Создадна специальная сеть для приложения `docker network create reddit`  
+Запущены контейнеры
+
+```bash
+docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+docker run -d --network=reddit --network-alias=post alvicsam/post:1.0
+docker run -d --network=reddit --network-alias=comment alvicsam/comment:1.0
+docker run -d --network=reddit -p 9292:9292 alvicsam/ui:1.0
+```
+Контейнер с ui пересобран новым Dockerfile  
+Создан Docker volume `docker volume create reddit_db`  
+Контейнеры запущены снова с учетом изменений:  
+```bash
+docker run -v reddit_db:/data/db -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+docker run -d --network=reddit --network-alias=post alvicsam/post:1.0
+docker run -d --network=reddit --network-alias=comment alvicsam/comment:1.0
+docker run -d --network=reddit -p 9292:9292 alvicsam/ui:2.0
+```
+
+Проверена работа приложения
