@@ -184,3 +184,17 @@ Creating awesomereedit_comment_1 ... done
 Creating awesomereedit_post_db_1 ... done
 Creating awesomereedit_post_1    ... done
 ```
+
+### ДЗ 16 Gitlab и Gitlab-ci
+
+Развернута вм для Gitlab, установлен Docker-CE, подготовлено окружение.  
+Развернут Gitlab из docker-compose  
+Создан проект, добавлен .gitlab-ci.yml, создан пайплайн, установлен контейнер с gitlab-runner, зарегистрирован gitlab-runner  
+Добавлено приложение reddit с гитхаба express42  
+Описаны dev, stage и production окружения  
+Добавлены условия и ограничения  
+Описано динамическое окружение  
+
+
+
+
