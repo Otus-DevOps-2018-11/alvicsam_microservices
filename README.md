@@ -196,5 +196,48 @@ Creating awesomereedit_post_1    ... done
 Описано динамическое окружение  
 
 
+### ДЗ 17 Мониторинг
+
+Открыл правила фаервол на gcp:
+```bash
+gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+gcloud compute firewall-rules create puma-default --allow tcp:9292
+```
+
+Создал docker-host:
+```bash
+export GOOGLE_PROJECT=
+docker-machine create --driver google --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b docker-host-new
+eval $(docker-machine env docker-host-new)
+```
+
+Запустил Prometheus в докер-контейнере:
+```bash
+docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus:v2.1.0 
+```
+
+В веб-интерфейсе получен build_info:  
+`prometheus_build_info{branch="HEAD",goversion="go1.9.2",instance="localhost:9090",job="prometheus",revision="85f23d82a045d103ea7f3c89a91fba4a93e6367a",version="2.1.0"}    1`
+
+Просмотрены метрики с адреса http://ip-of-prometheus-host:9090/metrics  
+Перемещены файлы в директории docker и monitoring, из docker-compose упраны инструкции build  
+Созданы файлы: Dockerfile для собственного контейнера prometheus, prometheus.yml с настройками  
+Собран докер-образ: `docker build -t $USER_NAME/prometheus`  
+Собраны образы: `for i in ui post-py comment; do cd src/$i; bash docker_build.sh; cd -; done`  
+В docker-compose добавлен блок с prometheus  
+
+После `docker-compose up -d` благодоря prometheus обнаружил, что приложение работает некорректно - не работал блок комментариев. Переделал docker-compose.yml (добавил алиасы для сетей)  
+В docker-compose добавлен node-exporter, также добавлен job в prometheus.yml, пересобран контейнер с prometheus.  
+Зашел по ssh на докер хост, создал нагрузку на CPU командой `yes > /dev/null`, убедился, что Prometheus работает (график node_load1)  
+Запушил образы на докерхаб:
+```bash
+docker push $USER_NAME/ui
+docker push $USER_NAME/comment
+docker push $USER_NAME/post
+docker push $USER_NAME/prometheus
+```
+
+Увидеть можно здесь: https://hub.docker.com/u/alvicsam
+
 
 
