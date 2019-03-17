@@ -13,13 +13,23 @@ services:
     image: ${USERNAME}/ui:${UIVER}
     ports:
       - ${REDDITPORT}:${REDDITPORT}/tcp
-    networks:
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.ui
     networks:
       front_net:
        aliases:
        - ui
+
   post:
     image: ${USERNAME}/post:${POSTVER}
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+        tag: service.post
     networks:
       back_net:
        aliases:
