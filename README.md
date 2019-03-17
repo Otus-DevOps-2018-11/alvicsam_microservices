@@ -239,5 +239,39 @@ docker push $USER_NAME/prometheus
 
 Увидеть можно здесь: https://hub.docker.com/u/alvicsam
 
+### ДЗ 18 Логирование
+
+Создал docker-machine:
+
+```bash
+docker-machine create --driver google \
+ --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+ --google-machine-type n1-standard-1 \
+ --google-open-port 5601/tcp \
+ --google-open-port 9292/tcp \
+ --google-open-port 9411/tcp \
+ logging 
+```
+
+Создал docker-compose-logging.yml  
+Указал версию для elasticsearch и kibana, т.к. latest не запускается  
+Создал Dockerfile для контейнера fluentd и собрал контейнер  
+Добавил логирование в контейнер post  
+Зашел в docker-machine и поменял параметр ядра, чтобы elasticsearch заработал:
+```bash
+docker-machine ssh logging
+sysctl -w vm.max_map_count=262144
+```
+Запустил `docker-compose -f docker-compose-logging.yml up -d`  
+Создал несколько записей и комментов, зашёл в Kibana и увидел логи  
+Добавил фильтр парсинга json в fluent.conf, пересобрал контейнер, перезапустил docker compose:
+```bash
+docker build -t $USERNAME/fluentd .
+docker-compose -f docker-compose-logging.yml up -d fluentd
+```
+Обновил field list в Management -> Kibana Index Patterns, убедился, что json парсится  
+Добавил логирование для контейнера ui в docker-compose, перезапустил его  
+Во fluent.conf добавил фильтр с регуляркой для ui, пересобрал, перезапустил контейнер  
+Изменил регулярку на grok, пересобрал ui, убедился, что сообщение парсится  
 
 
