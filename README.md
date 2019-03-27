@@ -275,3 +275,100 @@ docker-compose -f docker-compose-logging.yml up -d fluentd
 Изменил регулярку на grok, пересобрал ui, убедился, что сообщение парсится  
 
 
+### ДЗ 20 kubernetes-2
+
+Установлен kubectl:
+
+```bash
+sudo apt-get update && sudo apt-get install -y apt-transport-https
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubectl
+```
+
+Установлен minikube:
+```bash
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.27.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+```
+
+Запущен minikube и проверен:
+```bash
+$minikube start 
+$kubectl get nodes
+NAME       STATUS   ROLES    AGE   VERSION
+minikube   Ready    master   1m    v1.10.0
+```
+
+Добавлен ресурс ./kubernetes/reddit/ui-deployment.yml  
+Запущены:
+```bash
+#Применение деплоймента
+ $ kubectl apply -f ui-deployment.yml
+deployment.apps/ui created
+# Проверка деплоймента
+ $ kubectl get deployment
+NAME   DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+ui     3         3         3            0           16s
+# Проверка, что pod'ы создались
+ $ kubectl get pods --selector component=ui
+NAME                  READY   STATUS    RESTARTS   AGE
+ui-6b5984885c-89mjl   1/1     Running   0          2m
+ui-6b5984885c-98xd9   1/1     Running   0          2m
+ui-6b5984885c-f4xv5   1/1     Running   0          2m
+```
+
+Проброшен порт: `kubectl port-forward ui-6b5984885c-89mjl 8080:9292`  
+Проверил, что приложение по адресу http://127.0.0.1:8080 открылось  
+Провернул вышеописанное с comment-deployment.yml, проверил по адресу http://localhost:8080/healthcheck:
+```bash
+$ curl http://localhost:8080/healthcheck
+{"status":0,"dependent_services":{"commentdb":0},"version":"0.0.3"}
+```
+Провернул вышеописанное с post-deployment.yml, проверил по адресу http://localhost:8080/healthcheck:
+```bash
+$ curl http://localhost:8080/healthcheck
+{"status": 0, "dependent_services": {"postdb": 0}, "version": "0.0.2"}
+```
+Аналогичным обарзом запущен pod с mongo  
+Созданы объекты Service для набора POD-ов и способов доступа к ним (comment-service и post-service).  
+Проверка:
+```bash
+$ kubectl describe service comment | grep Endpoints
+Endpoints:         172.17.0.7:9292,172.17.0.8:9292,172.17.0.9:9292
+$ kubectl describe service post | grep Endpoints
+Endpoints:         172.17.0.10:5000,172.17.0.11:5000,172.17.0.12:5000
+$ kubectl exec -ti post-7d77cfc4d9-9cfbb nslookup comment
+nslookup: can't resolve '(null)': Name does not resolve
+
+Name:      comment
+Address 1: 10.106.230.40 comment.default.svc.cluster.local
+```
+По аналогии создан сервис mongodb  
+При попытке зайти на http://localhost:9292 получили ошибку, т.к. микросервисы коннектятся к бд под разными именами  
+Обновил файлы comment-deployment.yml, mongo-deployment.yml, post-deployment.yml  
+Создал comment-mongodb-service.yml, post-mongodb-service.yml - сервисы для БД comment и post 
+Применил конфигурацию и убедился, что приложение работает  
+
+Удалил объект mongodb-service.yml `kubectl delete -f mongodb-service.yml`
+Создал сервис ui-service.yml и применил конфигурацию  
+Зашел через `minikube service ui` и убедился, что приложение работает  
+Посмотрел сервис лист:
+```bash
+$ minikube service list
+|-------------|----------------------|-----------------------------|
+|  NAMESPACE  |         NAME         |             URL             |
+|-------------|----------------------|-----------------------------|
+| default     | comment              | No node port                |
+| default     | comment-db           | No node port                |
+| default     | kubernetes           | No node port                |
+| default     | post                 | No node port                |
+| default     | post-db              | No node port                |
+| default     | ui                   | http://192.168.99.100:32092 |
+| kube-system | kube-dns             | No node port                |
+| kube-system | kubernetes-dashboard | http://192.168.99.100:30000 |
+|-------------|----------------------|-----------------------------|
+```
+
+
+
