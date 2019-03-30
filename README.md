@@ -275,3 +275,20 @@ docker-compose -f docker-compose-logging.yml up -d fluentd
 Изменил регулярку на grok, пересобрал ui, убедился, что сообщение парсится  
 
 
+### ДЗ 19 Kubernetes-1
+
+Создан кластер по туториалу https://github.com/kelseyhightower/kubernetes-the-hard-way  
+
+Добавлены деплойменты ui,post,common
+
+Применена конфигурация:
+
+```bash
+$ kubectl get pods
+NAME                                  READY   STATUS    RESTARTS   AGE
+busybox-bd8fb7cbd-qlrzt               1/1     Running   0          26m
+comment-deployment-7f68b8dfdc-4f9qv   1/1     Running   0          73s
+nginx-dbddb74b8-mftq7                 1/1     Running   0          19m
+post-deployment-65bbf58b97-jlfnk      1/1     Running   0          2m20s
+ui-deployment-5f7677fd97-rs9qw        1/1     Running   0          73s
+```
