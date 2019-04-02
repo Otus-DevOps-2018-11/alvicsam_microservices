@@ -370,5 +370,14 @@ $ minikube service list
 |-------------|----------------------|-----------------------------|
 ```
 
+Создал dev-namespace  
+Запустил в нём приложение: `kubectl apply -n dev -f .` и проверил, что всё работает `minikube service ui -n dev`  
+Добавил информацию об окружении в ui-deployment.yml (секция env в spec), применил `kubectl apply -f ui-deployment.yml -n dev` и убедился что в ui появилось слово dev  
+
+
+
+
+
+
 
 
