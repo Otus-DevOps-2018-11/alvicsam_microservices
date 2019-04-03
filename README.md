@@ -375,8 +375,38 @@ $ minikube service list
 Добавил информацию об окружении в ui-deployment.yml (секция env в spec), применил `kubectl apply -f ui-deployment.yml -n dev` и убедился что в ui появилось слово dev  
 
 
-
-
+Запустил приложение в GKE:
+```bash
+$ gcloud container clusters get-credentials standard-cluster-1 --zone europe-west2-a --project docker-5
+Fetching cluster endpoint and auth data.
+kubeconfig entry generated for standard-cluster-1.
+$ kubectl config current-context
+gke_docker-53896_europe-west2-a_standard-cluster-1
+$ kubectl apply -f ./kubernetes/reddit/dev-namespace.yml
+namespace/dev created
+$ kubectl apply -f ./kubernetes/reddit/ -n dev
+deployment.apps/comment created
+service/comment-db created
+service/comment created
+namespace/dev unchanged
+deployment.apps/mongo created
+service/mongodb created
+deployment.apps/post created
+service/post-db created
+service/post created
+deployment.apps/ui created
+service/ui created
+$ kubectl get nodes -o wide
+NAME                                                STATUS   ROLES    AGE   VERSION          INTERNAL-IP   EXTERNAL-IP      OS-IMAGE                             KERNEL-VERSION   CONTAINER-RUNTIME
+gke-standard-cluster-1-default-pool-3aacd640-0rx6   Ready    <none>   5m    v1.11.7-gke.12   10.154.0.3    35.242.181.106   Container-Optimized OS from Google   4.14.91+         docker://17.3.2
+gke-standard-cluster-1-default-pool-3aacd640-159c   Ready    <none>   4m    v1.11.7-gke.12   10.154.0.2    35.242.185.35    Container-Optimized OS from Google   4.14.91+         docker://17.3.2
+$ kubectl describe service ui -n dev | grep NodePort
+Type:                     NodePort
+NodePort:                 <unset>  31574/TCP
+$ curl http://35.242.185.35:31574 | grep dev
+<a class='navbar-brand' href='/'>Microservices Reddit in dev ui-5d65bf8d9b-pd6dw container</a>
+```
+![gke](gke.png)
 
 
 
